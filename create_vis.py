@@ -1,10 +1,89 @@
 import itertools
+import json
 import os
 
 import numpy as np
 import pandas as pd
 
 from itertools import count
+
+HTML_TOP = \
+    r"""
+<!DOCTYPE html>
+<!-- saved from url=(0045)http://bioinformatics.org.au/tools/AFnetwork/ -->
+<html style="">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+
+    <script src="./support_files/jquery.min.js.download"></script>
+    <script type="text/javascript" src="./support_files/d3.js.download"></script>
+    <script type="text/javascript" src="./support_files/fisheye.js.download"></script>
+    <script type="text/javascript" src="./support_files/jquery-ui.js.download"></script>
+    <link rel="stylesheet" type="text/css" href="./support_files/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="./support_files/style.css">
+
+    <link href="./support_files/css" rel="stylesheet" type="text/css">
+    <link href="./support_files/css(1)" rel="stylesheet" type="text/css">
+    <link href="./support_files/css(2)" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="./support_files/gg_styles.css" type="text/css">
+
+    <title>FILE NAME HERE</title>
+</head>
+
+<body>
+    <div id="main">
+
+        <div id="mainpage">
+
+            <span id="beauty">
+                FILE NAME HERE
+            </span>
+            <br>
+            <div>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+                fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+                deserunt mollit anim id est laborum.
+            </div>
+            <p></p>
+            <hr>
+
+
+            <script type="application/json" id="mis">
+"""
+
+HTML_BOTTOM = \
+    r"""
+</script>
+
+            <form>
+                <h3>Threshold (min 0)<label for="rangeVal"></label><input type="range" id="thersholdSlider"
+                        name="points" min="0" max="10" step="0.5"
+                        oninput="threshold(this.value);document.getElementById(&#39;rangeValLabel&#39;).innerHTML = this.value">(max
+                    10) selected : <em id="rangeValLabel" style="font-style: normal;"></em></h3>
+            </form>
+            <div class="ui-widget">
+                <input id="search" class="ui-autocomplete-input" autocomplete="off">
+                <button type="button" onclick="searchNode()">Search</button>
+            </div>
+
+            <script type="text/javascript" src="./support_files/143_network.js.download"></script>
+
+        </div>
+    </div>
+
+    <ul class="ui-autocomplete ui-front ui-menu ui-widget ui-widget-content" id="ui-id-1" tabindex="0"
+        style="display: none;"></ul><span role="status" aria-live="assertive" aria-relevant="additions"
+        class="ui-helper-hidden-accessible"></span>
+</body>
+
+</html>
+"""
 
 # The PHYLIP matrix as a pandas dataframe
 PHYLIP_DF: pd.DataFrame = None
@@ -71,7 +150,7 @@ def create_name_list() -> list:
     global PHYLIP_DF
     global NAME_ENUM
 
-    names_list = [{"name": name} for name in PHYLIP_DF.index]
+    names_list = [{"name": name, "group": name} for name in PHYLIP_DF.index]
 
     return names_list
 
@@ -103,14 +182,40 @@ def create_links_list() -> list:
     return links_list
 
 
+def write_output(output_path: str, json_dict: dict):
+    """
+    Insert the collected and reformatted PHYLIP data into the javascript 
+    network tree.
+    """
+
+    global HTML_TOP
+    global HTML_BOTTOM
+
+    with open(output_path, "w") as output_file:
+
+        print(HTML_TOP, file=output_file, flush=True)
+
+        json.dump(json_dict, output_file, indent=4)
+
+        print(HTML_BOTTOM, file=output_file, flush=True)
+
+    return
+
+
 def main():
 
-    phylip_path = os.path.join(os.getcwd(), "data", "michael_dist_matrix.txt")
+    output_path = os.path.join(os.getcwd(), "test.html")
+    phylip_path = os.path.join(os.getcwd(), "data", "sample.txt")
     load_dataframe(phylip_path)
 
     # enumerate_names()
 
-    create_links_list()
+    links_list = create_links_list()
+    name_list = create_name_list()
+
+    script_json = {"nodes": name_list, "links": links_list}
+
+    write_output(output_path, script_json)
 
 
 if __name__ == '__main__':
