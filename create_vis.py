@@ -1,11 +1,9 @@
 import itertools
 import json
-import os
-
-import numpy as np
-import pandas as pd
-
+import argparse
 from itertools import count
+
+import pandas as pd
 
 HTML_TOP = \
     r"""
@@ -31,7 +29,7 @@ HTML_TOP = \
     <link href="./support_files/css(2)" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="./support_files/gg_styles.css" type="text/css">
 
-    <title>FILE NAME HERE</title>
+    <title>{title}</title>
 </head>
 
 <body>
@@ -40,7 +38,7 @@ HTML_TOP = \
         <div id="mainpage">
 
             <span id="beauty">
-                FILE NAME HERE
+                {title}
             </span>
             <br>
             <div>
@@ -182,7 +180,7 @@ def create_links_list() -> list:
     return links_list
 
 
-def write_output(output_path: str, json_dict: dict):
+def write_output(output_path: str, json_dict: dict, title: str):
     """
     Insert the collected and reformatted PHYLIP data into the javascript 
     network tree.
@@ -193,7 +191,7 @@ def write_output(output_path: str, json_dict: dict):
 
     with open(output_path, "w") as output_file:
 
-        print(HTML_TOP, file=output_file, flush=True)
+        print(HTML_TOP.format(title=title), file=output_file, flush=True)
 
         json.dump(json_dict, output_file, indent=4)
 
@@ -202,20 +200,37 @@ def write_output(output_path: str, json_dict: dict):
     return
 
 
-def main():
+def create_matrix_visualizer(phylip_path: str, output_path: str, title: str):
 
-    output_path = os.path.join(os.getcwd(), "test.html")
-    phylip_path = os.path.join(os.getcwd(), "data", "sample.txt")
     load_dataframe(phylip_path)
-
-    # enumerate_names()
-
+    enumerate_names()
     links_list = create_links_list()
     name_list = create_name_list()
 
     script_json = {"nodes": name_list, "links": links_list}
 
-    write_output(output_path, script_json)
+    write_output(output_path, script_json, title)
+
+    return
+
+
+def main():
+
+    # Example:
+    # python create_vis.py --phylip_path .\data\sample.txt --output_path .\test.html
+
+    parser = argparse.ArgumentParser(description="Uses the data from a PHYLIP"
+                                     " matrix to create a tree visualizer.")
+
+    parser.add_argument('--phylip_path', type=str, required=True,
+                        help='A file path to the phylip matrix.')
+    parser.add_argument('--output_path', type=str, required=True,
+                        help='A file path to write the output html page.')
+    parser.add_argument('--title', type=str, required=False, default="Tree Visualizer",
+                        help='A title to give the html page.')
+
+    args = parser.parse_args()
+    create_matrix_visualizer(args.phylip_path, args.output_path, args.title)
 
 
 if __name__ == '__main__':
