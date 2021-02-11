@@ -227,10 +227,6 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-### R.Bookdown Stack ###
-# R package: bookdown caching files
-/*_files/
-
 ### Java ###
 # Compiled class file
 *.class
