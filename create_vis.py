@@ -61,7 +61,7 @@ HTML_BOTTOM = \
 
             <form>
                 <h3>Threshold (min 0)<label for="rangeVal"></label><input type="range" id="thersholdSlider"
-                        name="points" min="0" max="10" step="0.5"
+                        name="points" min="0" max="10" step="0.01"
                         oninput="threshold(this.value);document.getElementById(&#39;rangeValLabel&#39;).innerHTML = this.value">(max
                     10) selected : <em id="rangeValLabel" style="font-style: normal;"></em></h3>
             </form>
